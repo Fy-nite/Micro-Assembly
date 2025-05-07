@@ -1145,7 +1145,7 @@ Directly accessing hardcoded memory addresses is **highly discouraged** and **ex
 *   **Portability Nightmare:** Addresses are specific to a particular runtime instance and memory layout. Code using direct addresses is **not portable**.
 *   **Likely Crashes:** Incorrect usage will almost certainly lead to crashes, memory corruption, or completely unpredictable behavior. Think of it like juggling chainsaws blindfolded – maybe you can, but why would you?
 
-**Prefer safer alternatives:** Use labels defined with data directives (`DB`, `DQ`, `RESB`, etc.), `STATE` variables, stack-relative addressing (`[RBP - offset]`), or pointers obtained from the runtime (`MNI Memory.allocate`, `SYSCALL mmap`).
+**Prefer safer alternatives:** Use labels defined with data directives (`DB`, `DQ`, `RESB`, etc.), `STATE` variables, stack-relative addressing (`[RBP - offset]`), or pointers obtained from the runtime (`MALLOC`).
 
 Use `$address` only if you are absolutely certain you know the exact memory layout provided by a specific, non-portable runtime environment and understand the severe risks involved.
 
@@ -1252,7 +1252,7 @@ Executes a system call. The specific operation performed is determined by the va
 ### Calling Convention
 
 The standard convention for `SYSCALL` is based on common practices (similar to Linux x86_64):
-
+#### The syscall function **does not** use the [_mdecl](https://finitewiki.carsoncoder.com/index.php/MicroASM_Calling_Standard) standard. Your own functions should use the [_mdecl](https://finitewiki.carsoncoder.com/index.php/MicroASM_Calling_Standard) standard
 
 
 -   **System Call Number:** The specific system call being requested is placed in the `RAX` register.
