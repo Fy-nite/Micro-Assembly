@@ -1,0 +1,7 @@
+#include "stdio.print"
+lbl main
+    mov RAX 1
+    mov RBX 100
+    db $100 "Hello, World!"
+    call #printf
+hlt

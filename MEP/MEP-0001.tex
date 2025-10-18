@@ -1,0 +1,337 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+
+% Page layout
+\geometry{a4paper, margin=1in}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+% Colors
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+% Listings style
+\lstset{
+	backgroundcolor=\color{backcolour},
+	commentstyle=\color{green},
+	keywordstyle=\color{blue},
+	numberstyle=\tiny\color{codegray},
+	stringstyle=\color{red},
+	basicstyle=\ttfamily\footnotesize,
+	breakatwhitespace=false,
+	breaklines=true,
+	captionpos=b,
+	keepspaces=true,
+	numbers=left,
+	numbersep=5pt,
+	showspaces=false,
+	showstringspaces=false,
+	showtabs=false,
+	tabsize=2
+}
+
+% Header and footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textit{\proposalTitle}}
+\fancyhead[R]{\proposalType\ \proposalNumber}
+\fancyfoot[C]{\thepage\ of \pageref{LastPage}}
+
+% Title formatting
+\titleformat{\section}
+{\Large\bfseries}
+{\thesection}{1em}{}
+\titleformat{\subsection}
+{\large\bfseries}
+{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+{\bfseries}
+{\thesubsubsection}{1em}{}
+
+% Custom commands
+\newcommand{\proposalType}{MEP}
+\newcommand{\proposalNumber}{0001}
+\newcommand{\proposalTitle}{Module Native Interface (MNI)}
+\newcommand{\proposalStatus}{Implemented}
+\newcommand{\proposalVersion}{1.0}
+\newcommand{\proposalDate}{\today}
+\newcommand{\proposalAuthor}{Charlie santana}
+\newcommand{\proposalAuthorsEmail}{charliesan@envs.net}
+\newcommand{\proposalSponsor}{}
+\newcommand{\proposalDiscussion}{https://git.finite.ovh/Micro-Assembly/discussions}
+
+% MicroASM language definition
+\lstdefinelanguage{MicroASM}{
+	morekeywords=[1]{
+		% Basic Instructions
+		MOV, MOVZX, MOVSX, ADD, SUB, MUL, DIV, INC, DEC,
+		% Flow Control
+		JMP, CMP, CALL, RET, HLT, EXIT,
+		% Conditional Jumps
+		JZ, JNZ, JE, JNE, JS, JNS, JC, JNC, JB, JNAE, JAE, JNB, JO, JNO,
+		JG, JNLE, JL, JNGE, JGE, JNL, JLE, JNG,
+		% Stack Operations
+		PUSH, POP, ENTER, LEAVE,
+		% I/O Operations
+		IN, OUT, COUT,
+		% Command Line Arguments
+		ARGC, GETARG,
+		% Heap Operations
+		MALLOC, FREE,
+		% Bitwise Operations
+		AND, OR, XOR, NOT, SHL, SHR, SAR,
+		% Memory Operations
+		MOVADDR, MOVTO, COPY, FILL, CMP_MEM,
+		% System Call
+		SYSCALL,
+		% Floating Point
+		FMOV, FADD, FSUB, FMUL, FDIV, FCMP,
+		CVTSI2SD, CVTUI2SD, CVTSD2SI, CVTSD2UI, CVTSS2SD, CVTSD2SS,
+		FJE, FJNE, FJLT, FJLE, FJGT, FJGE, FJUO,
+		% MNI Calls
+		MNI,
+		% Program Control
+		LBL, STATE, MACRO, ENDMACRO, SCOPE, ENDSCOPE
+	},
+	morekeywords=[2]{
+		% Registers
+		RAX, RBX, RCX, RDX, RSI, RDI, RBP, RSP, RIP,
+		R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15,
+		FPR0, FPR1, FPR2, FPR3, FPR4, FPR5, FPR6, FPR7, FPR8, FPR9, FPR10, FPR11, FPR12, FPR13, FPR14, FPR15
+	},
+	morekeywords=[3]{
+		% Data Types
+		BYTE, WORD, DWORD, QWORD, FLOAT, DOUBLE, PTR
+	},
+	morekeywords=[4]{
+		% Directives
+		DB, DW, DD, DQ, DF, DDbl, RESB, RESW, RESD, RESQ, RESF, RESDbl,
+		\#include
+	},
+	morecomment=[l]{;},
+	morestring=[b]{"},
+	sensitive=true
+}
+
+% Style definition for MicroASM
+\lstdefinestyle{MicroASMstyle}{
+	language=MicroASM,
+	basicstyle=\ttfamily\small,
+	keywordstyle=[1]\color{keywordblue}\bfseries,
+	keywordstyle=[2]\color{registerpurple},
+	keywordstyle=[3]\color{typecyan},
+	keywordstyle=[4]\color{directiveorange},
+	commentstyle=\color{commentgreen}\itshape,
+	stringstyle=\color{stringred},
+	numbers=left,
+	numberstyle=\tiny\color{black},
+	stepnumber=1,
+	numbersep=5pt,
+	backgroundcolor=\color{white},
+	showspaces=false,
+	showstringspaces=false,
+	showtabs=false,
+	tabsize=4,
+	captionpos=b,
+	breaklines=true,
+	breakatwhitespace=true,
+	frame=single,
+	rulecolor=\color{lightgray},
+	escapeinside={\%*}{*)}
+}
+
+% Custom colors for specific elements
+\newcommand{\microasmregister}[1]{\textcolor{registerpurple}{\texttt{#1}}}
+\newcommand{\microasmkeyword}[1]{\textcolor{keywordblue}{\texttt{#1}}}
+\newcommand{\microasmtype}[1]{\textcolor{typecyan}{\texttt{#1}}}
+\newcommand{\microasmdirective}[1]{\textcolor{directiveorange}{\texttt{#1}}}
+\newcommand{\microasmcomment}[1]{\textcolor{commentgreen}{\texttt{;#1}}}
+\newcommand{\microasmstring}[1]{\textcolor{stringred}{\texttt{"#1"}}}
+\newcommand{\microasmnumber}[1]{\textcolor{numberbrown}{\texttt{#1}}}
+\newcommand{\microasmlabel}[1]{\textcolor{labelteal}{\texttt{#1}}}
+
+
+\begin{document}
+	
+	% Title page
+	\begin{titlepage}
+		\centering
+		
+		\vspace*{2cm}
+		
+		{\Huge\bfseries \proposalType-\proposalNumber\\}
+		\vspace{0.5cm}
+		{\LARGE \proposalTitle}
+		
+		\vspace{2cm}
+		
+		\begin{tabular}{ll}
+			\textbf{Title:} & \proposalTitle \\
+			\textbf{Status:} & \proposalStatus \\
+			\textbf{Type:} & Standards Track / Core  \\
+			\textbf{Version:} & \proposalVersion \\
+			\textbf{Date:} & \proposalDate \\
+			\textbf{Author:} & \proposalAuthor \\
+			\textbf{Email:} & \proposalAuthorsEmail \\
+			\textbf{Sponsor:} & \proposalSponsor \\
+			\textbf{Discussion:} & \proposalDiscussion \\
+		\end{tabular}
+		
+		\vfill
+		
+		\begin{abstract}
+			The Module Native Interface (MNI) provides an abstraction layer for invoking native host-language functions from Micro-Assembly (MASM) programs.  
+			Through MNI, MASM developers can extend the runtime’s capabilities without modifying its core — enabling access to features such as file I/O, threading, networking, and user interface operations.
+			
+		\end{abstract}
+		
+		\vspace{1cm}
+		
+		\rule{\textwidth}{0.4pt}
+		
+		\vspace{0.5cm}
+		
+		\small
+		Copyright \textcopyright{} \the\year{} \proposalAuthor
+		
+		This work is licensed under the AGPL v3 license.
+		
+	\end{titlepage}
+	
+	% Table of contents
+	\tableofcontents
+	\newpage
+	
+	% Main content
+	\section{Introduction}
+	MNI or Module-Native-Interface provides a set of External functions to allow developers
+	to write Foreign functions that provide Micro-Assembly 
+	
+	\subsection{Background}
+	Beyond built-in `SYSCALL` operations, MASM currently has no standard mechanism for interacting with host-system APIs.  
+	Implementing features like **concurrency**, **non-blocking I/O**, or **GUI** support would otherwise require patching the runtime or expanding the syscall table.
+	
+	\subsection{Scope}
+	This MEP Defines the syntax and how MNI should be handled based on what given features the target language has.
+	
+	\section{Motivation}
+	MNI solves this by defining a unified and extensible way to **expose host modules** to MASM programs.  
+	It allows developers to build libraries that “cover” host APIs and register them at runtime without altering the VM core.
+	
+	\section{Rationale}
+	While extending the syscall table could theoretically achieve similar results, that approach quickly becomes unmanageable.  
+	MNI provides a **modular**, **discoverable**, and **language-agnostic** mechanism for integrating host functionality without bloating or fragmenting the core runtime.
+	
+	Future proposals may introduce typed arguments, metadata reflection, or introspection commands (`MNI list`, etc.) — all building upon this foundation.
+	\subsection{Trade-offs}
+	Discussion of trade-offs considered during the design process.
+	
+	\section{Specification}
+
+	\subsection{Instruction Definition}
+	The MNI instruction is defined as:
+
+	\begin{lstlisting}[language=MicroASM]
+	MNI <namespace_path>.<function_name> <arguments>*
+	\end{lstlisting}
+
+	where:
+	\begin{itemize}
+		\item \textbf{namespace\_path} = identifier("." identifier)*
+		\item \textbf{function\_name} = identifier
+		\item \textbf{arguments} = zero or more literal or register arguments, separated by spaces
+	\end{itemize}
+
+	\subsection{Formal Grammar (EBNF)}
+	\begin{lstlisting}[language=MicroASM]
+	Instruction     ::= "MNI" QualifiedName Arguments?
+	QualifiedName   ::= Identifier ( "." Identifier )*
+	Arguments       ::= ( Value ( ","? Value )* )?
+	Identifier      ::= [A-Za-z_][A-Za-z0-9_]*
+	Value           ::= Literal | Register | Identifier
+	\end{lstlisting}
+
+	\subsection{Semantics}
+	\begin{enumerate}
+		\item The \texttt{MNI} instruction resolves the specified \texttt{<namespace\_path>.<function\_name>} in the \textbf{Module Registry}.
+		\item If found, the runtime invokes the registered host function with the provided arguments.
+		\item The native function may return a result either:
+		\begin{itemize}
+			\item via a designated register (typically \texttt{RAX}), or
+			\item via a pointer argument passed by the caller.
+		\end{itemize}
+		\item If the module or function is not found, the runtime raises a runtime error or trap.
+	\end{enumerate}
+
+	\subsection{Example Usage}
+	\begin{lstlisting}[language=MicroASM]
+	; Allocate 1024 bytes from the Memory module
+	MNI Memory.Allocate 1024
+	; Pointer to the allocated block now resides in RAX
+	MOV RAX, $[RBP+8]
+
+	; Open a file for reading
+	MNI File.Open "data.txt" 0
+
+	; Read 64 bytes into a buffer
+	MNI File.Read RAX 64
+	\end{lstlisting}
+
+	\subsection{Return Semantics}
+	The convention for return values is implementation-defined.\\
+	Common practice:
+	\begin{itemize}
+		\item Scalar or pointer results $\rightarrow$ \texttt{RAX}
+		\item Structured results $\rightarrow$ pointer argument provided by caller
+	\end{itemize}
+
+	\subsection{Safety Considerations}
+	MNI functions execute native host code, which may perform unrestricted operations.\\
+	Implementations \textbf{should}:
+	\begin{itemize}
+		\item Validate memory and register access.
+		\item Enforce sandboxing or permission checks for untrusted modules.
+		\item Prevent host-level crashes from propagating to the MASM VM when possible.
+	\end{itemize}
+	
+	\section{Backwards Compatibility}
+	This proposal is fully backward-compatible.  
+	Existing MASM programs remain unaffected; MNI simply adds an additional instruction and registry mechanism.
+	
+	
+	\subsection{Migration Path}
+ 	Any code written without MNI works still without it, this implementation gives a new instruction for developers to use inside their code.
+	
+	\subsection{Performance Costs}
+	Based on the language chosen to be the MNI host, like lua or JavaScript.
+	Performance can and will vary.
+	
+	Example: if the interpreter is built in C and it uses Lua for the MNI scripting.
+	jumping in and out of the interpreter to call the MNI features does include performance cost.
+	
+	\section{Reference Implementation}
+	The **JMASM** runtime implements the first complete MNI system.  
+	It supports automatic module registration and dynamic discovery, allowing developers to author native integration's directly in Java without modifying the interpreter.
+	
+	\subsection{Implementation Details}
+	MNI uses a registry system to allow for modular attachments of code at runtime.
+	It scans either a provided file or Directory at runtime for Modules and dynamicly loads the contents for
+	the MNI instruction to use.
+	
+
+	
+\end{document}

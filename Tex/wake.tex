@@ -1,0 +1,465 @@
+\documentclass[a4paper,11pt]{book}
+
+% Engine and fonts
+\usepackage{fontspec} % Use XeLaTeX/LuaLaTeX
+\usepackage[english]{babel}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{parskip}
+
+% Mono font setup (use a TeX Live-safe default)
+\defaultfontfeatures{Scale=MatchLowercase}
+\setmonofont{Latin Modern Mono}
+
+% Colors for code listings
+\definecolor{codebg}{HTML}{F8F9FB}
+\definecolor{codekw}{HTML}{005CC5}
+\definecolor{codecmt}{HTML}{22863A}
+\definecolor{codestr}{HTML}{A31515}
+\definecolor{codety}{HTML}{6F42C1}
+
+% Define Wake language for listings
+\lstdefinelanguage{Wake}{
+	morekeywords={mov,add,sub,mul,div,inc,and,or,xor,not,shl,shr,jmp,cmp,je,jne,jl,jg,call,ret,push,pop,out,cout,db,hlt,exit,alloc,free,while,if,else,return,void,int,byte,string,const,var},
+	sensitive=true,
+	morecomment=[l]{//},
+	morestring=[b]",% strings in double quotes
+}
+
+% Define MicroASM language for listings
+\lstdefinelanguage{MicroASM}{
+	morekeywords={MOV,ADD,SUB,MUL,DIV,INC,AND,OR,XOR,NOT,SHL,SHR,JMP,CMP,JE,JNE,JL,JG,JLE,JGE,CALL,RET,PUSH,POP,OUT,COUT,DB,HLT,EXIT},
+	sensitive=true,
+	morecomment=[l]{;},
+	morestring=[b]",
+}
+
+% Global listing style
+\lstset{
+	backgroundcolor=\color{codebg},
+	basicstyle=\ttfamily\small,
+	keywordstyle=\color{codekw}\bfseries,
+	commentstyle=\color{codecmt},
+	stringstyle=\color{codestr},
+	numberstyle=\scriptsize\color{gray},
+	columns=fullflexible,
+	keepspaces=true,
+	showstringspaces=false,
+	frame=single,
+	rulecolor=\color{black!10},
+	breaklines=true,
+	tabsize=2,
+}
+
+	\title{Wake Language Specification}
+\author{charlie-santana}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\chapter{Overview}
+Wake is a C-like syntax layer over MicroASM, aiming for better readability while retaining low-level control. Wake translates function-like statements directly into MicroASM instructions, and supports includes, functions, and structured control flow that map to labels and jumps in MicroASM.
+
+\section*{Compilation Model}
+At compilation time, Wake expands to standard MicroASM. Each Wake statement corresponds to one or more MicroASM instructions. Functions become labels with \texttt{RET}, variables can map to registers or memory locations, and constants are resolved at compile time.
+
+\chapter{Wake v1 Language Reference}
+
+This chapter summarizes the Wake v1 syntax and instruction mapping (from `specs/WakeV1/Wakev1.md`).
+
+\section{Basic Syntax}
+
+\subsection{Comments}
+Single-line comments start with \texttt{//}.
+
+\begin{lstlisting}[language=Wake,caption={Comments in Wake}]
+// This is a comment
+mov(RAX, 1); // This is an inline comment
+\end{lstlisting}
+
+\subsection{Function Definition}
+Functions are defined using the \texttt{void} keyword, followed by the function name, parentheses, and a body in curly braces.
+
+\begin{lstlisting}[language=Wake,caption={Function definition}]
+void myFunction() {
+		// Instructions go here
+		ret(); // Return from function
+}
+\end{lstlisting}
+
+\subsection{Includes}
+Wake supports two types of includes:
+
+\begin{enumerate}[label=\arabic*.]
+	\item \textbf{Wake Includes (\#include)}: Processes the specified \texttt{.wake} file recursively, incorporating its tokens into the current compilation unit. The compiler searches relative to the current file and in configured search paths.
+\begin{lstlisting}[language=Wake]
+#include "utils.wake"
+\end{lstlisting}
+
+	\item \textbf{MicroASM Includes (\#M\_include)}: Passes the include directive directly to the MicroASM compiler without processing the included file's content in Wake. Useful for including MicroASM headers or libraries.
+\begin{lstlisting}[language=Wake]
+#M_include "stdio.print" // Becomes #include "stdio.print" in .masm output
+\end{lstlisting}
+\end{enumerate}
+
+\section{Instruction Reference}
+Wake instructions map directly to MicroASM. They are called like functions with arguments in parentheses.
+
+\subsection{Data Movement}
+\begin{description}[style=nextline]
+	\item[\texttt{mov(dest, src)}] MicroASM: \texttt{MOV dest src}. Copies data from \texttt{src} to \texttt{dest}. Both can be registers or immediate values.
+\end{description}
+\begin{lstlisting}[language=Wake]
+mov(RAX, 10);
+mov(RBX, RAX);
+\end{lstlisting}
+
+\subsection{Arithmetic Operations}
+\begin{description}[style=nextline]
+	\item[\texttt{add(dest, src)}] MicroASM: \texttt{ADD dest src}.
+	\item[\texttt{sub(dest, src)}] MicroASM: \texttt{SUB dest src}.
+	\item[\texttt{mul(dest, src)}] MicroASM: \texttt{MUL dest src}.
+	\item[\texttt{div(dest, src)}] MicroASM: \texttt{DIV dest src}.
+	\item[\texttt{inc(dest)}] MicroASM: \texttt{INC dest}.
+\end{description}
+\begin{lstlisting}[language=Wake]
+add(R1, 5);
+sub(R1, R2);
+mul(R1, 2);
+div(R1, R3);
+inc(RAX);
+\end{lstlisting}
+
+\subsection{Logic and Bitwise Operations}
+\begin{description}[style=nextline]
+	\item[\texttt{and(dest, src)}] MicroASM: \texttt{AND dest src}.
+	\item[\texttt{or(dest, src)}] MicroASM: \texttt{OR dest src}.
+	\item[\texttt{xor(dest, src)}] MicroASM: \texttt{XOR dest src}.
+	\item[\texttt{not(dest)}] MicroASM: \texttt{NOT dest}.
+	\item[\texttt{shl(dest, count)}] MicroASM: \texttt{SHL dest count}.
+	\item[\texttt{shr(dest, count)}] MicroASM: \texttt{SHR dest count}.
+\end{description}
+\begin{lstlisting}[language=Wake]
+and(R1, R2);
+or(R1, R2);
+xor(R1, R1); // Zeroes R1
+not(R1);
+shl(RAX, 2);
+shr(RAX, 1);
+\end{lstlisting}
+
+\subsection{Control Flow}
+\begin{description}[style=nextline]
+		\item[\texttt{jmp(label)}] MicroASM: \texttt{JMP \#label}.
+	\item[\texttt{cmp(a, b)}] MicroASM: \texttt{CMP a b}.
+		\item[\texttt{je(trueLabel, falseLabel)}] MicroASM: \texttt{JE \#trueLabel \#falseLabel}.
+		\item[\texttt{jne(trueLabel, falseLabel)}] MicroASM: \texttt{JNE \#trueLabel \#falseLabel}.
+		\item[\texttt{jl(trueLabel, falseLabel)}] MicroASM: \texttt{JL \#trueLabel \#falseLabel}.
+		\item[\texttt{jg(trueLabel, falseLabel)}] MicroASM: \texttt{JG \#trueLabel \#falseLabel}.
+		\item[\texttt{call(label)}] MicroASM: \texttt{CALL \#label}.
+	\item[\texttt{ret()}] MicroASM: \texttt{RET}.
+\end{description}
+\begin{lstlisting}[language=Wake]
+jmp("loopStart");
+cmp(RAX, 10);
+je("equalCase", "notEqualCase");
+jne("notEqual", "areEqual");
+jl("lessThan", "greaterOrEqual");
+jg("greaterThan", "lessOrEqual");
+call("myFunction");
+ret();
+\end{lstlisting}
+
+\subsection{Stack Operations}
+\begin{description}[style=nextline]
+	\item[\texttt{push(value)}] MicroASM: \texttt{PUSH value}.
+	\item[\texttt{pop(dest)}] MicroASM: \texttt{POP dest}.
+\end{description}
+\begin{lstlisting}[language=Wake]
+push(RAX);
+push(10);
+pop(RBX);
+\end{lstlisting}
+
+\subsection{I/O Operations}
+\begin{description}[style=nextline]
+	\item[\texttt{out(port, value)}] MicroASM: \texttt{OUT port value}. Outputs a register value or memory address to a port (1 = stdout, 2 = stderr).
+	\item[\texttt{cout(port, value)}] MicroASM: \texttt{COUT port value}. Outputs the ASCII character for the value.
+\end{description}
+\begin{lstlisting}[language=Wake]
+out(1, RAX);
+out(1, $100);
+cout(1, 65); // 'A'
+\end{lstlisting}
+
+\subsection{Memory Definition}
+\begin{description}[style=nextline]
+		\item[\texttt{db(address, "string")}] MicroASM: \texttt{DB \$address "string"}. Defines a byte string at an address.
+\end{description}
+\begin{lstlisting}[language=Wake]
+db($500, "Hello Wake!");
+\end{lstlisting}
+
+\subsection{Program Control}
+\begin{description}[style=nextline]
+	\item[\texttt{hlt()}] MicroASM: \texttt{HLT}.
+	\item[\texttt{exit(code)}] MicroASM: \texttt{EXIT code}.
+\end{description}
+\begin{lstlisting}[language=Wake]
+hlt();
+exit(0);
+\end{lstlisting}
+
+\section{Example Program (v1)}
+\begin{lstlisting}[language=Wake,caption={Example Wake program}]
+// filepath: example.wake
+
+#include "utils.wake" // Assumes utils.wake defines printMessage and print
+
+void main() {
+		db($100, "Hello from main!"); // Define string at address $100
+		mov(RAX, $100);          // Move address to RAX
+
+		call("print");             // Call print function (defined in utils.wake)
+															 // which likely uses out(1, RAX)
+
+		call("printMessage");      // Call another function from utils.wake
+
+		mov(R1, 5);
+		mov(R2, 10);
+		cmp(R1, R2);
+		jl("isLess", "notLess"); // Jump based on comparison
+}
+
+void isLess() {
+		db($300, "R1 is less than R2");
+		mov(RAX, $300);
+		call("print");
+		hlt();
+}
+
+void notLess() {
+		db($400, "R1 is not less than R2");
+		mov(RAX, $400);
+		call("print");
+		hlt();
+}
+
+// Assumed content of utils.wake:
+// void printMessage() {
+//     db($200, "Message from utils!");
+//     mov(RAX, $200);
+//     out(1, RAX);
+//     ret();
+// }
+// void print() {
+//     out(1, RAX); // Prints string at address in RAX
+//     ret();
+// }
+\end{lstlisting}
+
+\chapter{Wake v2 Feature Additions}
+
+This chapter describes the new features added in Wake v2 (from `specs/WakeV2/WakeV2.md`). All additions compile down to standard MicroASM and are backward-compatible with Wake v1.
+
+\section{Variables and Constants}
+\subsection*{Syntax}
+\begin{lstlisting}[language=Wake]
+var <name> = <value>;       // Register-backed variable
+const <NAME> = <value>;     // Compile-time constant
+\end{lstlisting}
+
+\subsection*{Examples}
+\begin{lstlisting}[language=Wake]
+var counter = 0;      // Allocates a register (e.g., R3)
+const MAX = 100;      // Replaced with 100 during compilation
+\end{lstlisting}
+
+\subsection*{Translation Rules}
+\begin{itemize}
+	\item \textbf{var}: Assigns a register (e.g., R3) or fixed memory address.
+	\begin{lstlisting}[language=MicroASM]
+MOV R3 5  ; from: var x = 5;
+	\end{lstlisting}
+	\item \textbf{const}: Direct substitution.
+	\begin{lstlisting}[language=Wake]
+add(RAX, MAX); // becomes add(RAX, 100);
+	\end{lstlisting}
+\end{itemize}
+
+\section{If--Else Statements}
+\subsection*{Syntax}
+\begin{lstlisting}[language=Wake]
+if (<condition>) {
+		// True block
+} else {
+		// False block (optional)
+}
+\end{lstlisting}
+
+\subsection*{Conditions}
+Supports operators: \texttt{==}, \texttt{!=}, \texttt{<}, \texttt{>}, \texttt{<=}, \texttt{>=} (e.g., \texttt{RAX < 10}). Compound conditions with \texttt{\&\&}/\texttt{||} compile to nested comparisons and jumps.
+
+\subsection*{Example}
+\begin{lstlisting}[language=Wake]
+if (R1 == R2) {
+		mov(RAX, 1);
+} else {
+		mov(RAX, 0);
+}
+\end{lstlisting}
+
+\subsection*{Translation}
+\begin{lstlisting}[language=MicroASM]
+CMP R1 R2
+JE #if_true
+MOV RAX 0    ; False block
+JMP #end_if
+#if_true:
+MOV RAX 1    ; True block
+#end_if:
+\end{lstlisting}
+
+\section{Functions with Parameters and Return Values}
+\subsection*{Syntax}
+\begin{lstlisting}[language=Wake]
+<return_type> <name>(<type> <arg>, ...) {
+		// Body
+		return <value>;
+}
+\end{lstlisting}
+
+\subsection*{Types}
+Primitive types: \texttt{int}, \texttt{byte} (treated as registers/memory). Use \texttt{void} for no return value.
+
+\subsection*{Example}
+\begin{lstlisting}[language=Wake]
+int add(int a, int b) {
+		mov(RAX, a);
+		add(RAX, b);
+		return RAX;
+}
+\end{lstlisting}
+
+\subsection*{Translation}
+\begin{lstlisting}[language=MicroASM]
+; Caller:
+MOV R1 5     ; arg1
+MOV R2 10    ; arg2
+CALL #add    ; Result in RAX
+
+; Function:
+lbl add:
+MOV RAX R1
+ADD RAX R2
+RET
+\end{lstlisting}
+
+\section{While Loops}
+\subsection*{Syntax}
+\begin{lstlisting}[language=Wake]
+while (<condition>) {
+		// Loop body
+}
+\end{lstlisting}
+
+\subsection*{Example}
+\begin{lstlisting}[language=Wake]
+while (RAX > 0) {
+		dec(RAX);
+}
+\end{lstlisting}
+
+\subsection*{Translation}
+\begin{lstlisting}[language=MicroASM]
+lbl loop_start:
+CMP RAX 0
+JLE #loop_end
+DEC RAX
+JMP #loop_start
+lbl loop_end:
+\end{lstlisting}
+
+\section{Macros}
+\subsection*{Syntax}
+\begin{lstlisting}[language=Wake]
+#macro <NAME>(<args>) {
+		// Body
+}
+\end{lstlisting}
+
+\subsection*{Example}
+\begin{lstlisting}[language=Wake]
+#macro DOUBLE(x) {
+		shl(x, 1);
+}
+
+DOUBLE(RAX);  // Expands to: shl(RAX, 1);
+\end{lstlisting}
+
+\section{Memory Management}
+\subsection*{Syntax}
+\begin{lstlisting}[language=Wake]
+alloc(<name>, <size>);  // Dynamic allocation
+free(<name>);           // Deallocation
+\end{lstlisting}
+
+\subsection*{Example}
+\begin{lstlisting}[language=Wake]
+alloc(buffer, 100);  // Reserves 100 bytes
+mov(buffer, 42);     // $buffer is the base address
+free(buffer);
+\end{lstlisting}
+
+\subsection*{Translation}
+\begin{itemize}
+	\item \texttt{alloc} maps to a memory region (e.g., \$500).
+	\item \texttt{free} marks the region reusable (no MicroASM output; runtime-dependent).
+\end{itemize}
+
+\section{Type Hints}
+\subsection*{Syntax}
+\begin{lstlisting}[language=Wake]
+<type> <name> = <value>;
+\end{lstlisting}
+
+\subsection*{Example}
+\begin{lstlisting}[language=Wake]
+int score = 0;
+string msg = "Hello";
+\end{lstlisting}
+
+\subsection*{Behavior}
+No runtime overhead; used for compile-time checks. Strings map to \texttt{db} + address (e.g., \texttt{msg} \(\rightarrow\) \$100).
+
+\section{Example Program (v2)}
+\begin{lstlisting}[language=Wake]
+#include "math.wake"
+
+int factorial(int n) {
+		var result = 1;
+		while (n > 1) {
+				mul(result, n);
+				dec(n);
+		}
+		return result;
+}
+
+void main() {
+		const N = 5;
+		var x = factorial(N);
+		if (x > 10) {
+				call("printLarge");
+		}
+}
+\end{lstlisting}
+
+\section{Backward Compatibility}
+Existing Wake v1 code remains valid. New features compile to standard MicroASM.
+
+\end{document}

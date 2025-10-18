@@ -1,12 +1,18 @@
 # Prerequisites
 *.d
-
+*.toc
+*.log
+*.out
+*.pdf
+*.aux
+*.gz
 # Object files
 *.o
 *.ko
 *.obj
 *.elf
-
+*.fdb_latexmk
+*.fls
 finite
 
 # Linker output
@@ -24,7 +30,7 @@ finite
 *.la
 *.lo
 
-# Shared objects (inc. Windows DLLs)
+# Shared objects (dynamically linked libraries)
 *.dll
 *.so
 *.so.*
@@ -52,3 +58,5 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+Tex/wake.glo
+Tex/wake.idx

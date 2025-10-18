@@ -1,0 +1,374 @@
+\documentclass[a4paper,11pt]{book}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage{theorem}
+\usepackage{textcomp}
+\usepackage{listings}
+\usepackage{tikz}
+
+\usepackage[colorlinks=true, linkcolor=commentgreen, urlcolor=cyan, citecolor=green]{hyperref}
+
+%\usepackage{glossaries}
+\usepackage{parskip}
+
+\usepackage{fontspec}
+% Mono font setup (use a TeX Live-safe default)
+\defaultfontfeatures{Scale=MatchLowercase}
+\setmonofont{Latin Modern Mono}
+\fontspec{Noto-Sans-Mono}
+% Define colors
+\definecolor{keywordblue}{RGB}{0,0,128}
+\definecolor{commentgreen}{RGB}{0,128,0}
+\definecolor{stringred}{RGB}{163,21,21}
+\definecolor{registerpurple}{RGB}{128,0,128}
+\definecolor{typecyan}{RGB}{0,128,128}
+\definecolor{directiveorange}{RGB}{180,100,0}
+\definecolor{numberbrown}{RGB}{128,64,0}
+\definecolor{labelteal}{RGB}{0,128,128}
+\definecolor{microblue}{RGB}{30, 120, 200}
+% MicroASM language definition
+\lstdefinelanguage{MicroASM}{
+	morekeywords=[1]{
+		% Basic Instructions
+		MOV, MOVZX, MOVSX, ADD, SUB, MUL, DIV, INC, DEC,
+		% Flow Control
+		JMP, CMP, CALL, RET, HLT, EXIT,
+		% Conditional Jumps
+		JZ, JNZ, JE, JNE, JS, JNS, JC, JNC, JB, JNAE, JAE, JNB, JO, JNO,
+		JG, JNLE, JL, JNGE, JGE, JNL, JLE, JNG,
+		% Stack Operations
+		PUSH, POP, ENTER, LEAVE,
+		% I/O Operations
+		IN, OUT, COUT,
+		% Command Line Arguments
+		ARGC, GETARG,
+		% Heap Operations
+		MALLOC, FREE,
+		% Bitwise Operations
+		AND, OR, XOR, NOT, SHL, SHR, SAR,
+		% Memory Operations
+		MOVADDR, MOVTO, COPY, FILL, CMP_MEM,
+		% System Call
+		SYSCALL,
+		% Floating Point
+		FMOV, FADD, FSUB, FMUL, FDIV, FCMP,
+		CVTSI2SD, CVTUI2SD, CVTSD2SI, CVTSD2UI, CVTSS2SD, CVTSD2SS,
+		FJE, FJNE, FJLT, FJLE, FJGT, FJGE, FJUO,
+		% MNI Calls
+		MNI,
+		% Program Control
+		LBL, STATE, MACRO, ENDMACRO, SCOPE, ENDSCOPE
+	},
+	morekeywords=[2]{
+		% Registers
+		RAX, RBX, RCX, RDX, RSI, RDI, RBP, RSP, RIP,
+		R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15,
+		FPR0, FPR1, FPR2, FPR3, FPR4, FPR5, FPR6, FPR7, FPR8, FPR9, FPR10, FPR11, FPR12, FPR13, FPR14, FPR15
+	},
+	morekeywords=[3]{
+		% Data Types
+		BYTE, WORD, DWORD, QWORD, FLOAT, DOUBLE, PTR
+	},
+	morekeywords=[4]{
+		% Directives
+		DB, DW, DD, DQ, DF, DDbl, RESB, RESW, RESD, RESQ, RESF, RESDbl,
+		\#include
+	},
+	morecomment=[l]{;},
+	morestring=[b]{"},
+	sensitive=true
+}
+
+% Style definition for MicroASM
+\lstdefinestyle{MicroASMstyle}{
+	language=MicroASM,
+	basicstyle=\ttfamily\small,
+	keywordstyle=[1]\color{keywordblue}\bfseries,
+	keywordstyle=[2]\color{registerpurple},
+	keywordstyle=[3]\color{typecyan},
+	keywordstyle=[4]\color{directiveorange},
+	commentstyle=\color{commentgreen}\itshape,
+	stringstyle=\color{stringred},
+	numbers=left,
+	numberstyle=\tiny\color{black},
+	stepnumber=1,
+	numbersep=5pt,
+	backgroundcolor=\color{white},
+	showspaces=false,
+	showstringspaces=false,
+	showtabs=false,
+	tabsize=4,
+	captionpos=b,
+	breaklines=true,
+	breakatwhitespace=true,
+	frame=single,
+	rulecolor=\color{lightgray},
+	escapeinside={\%*}{*)}
+}
+
+% Custom colors for specific elements
+\newcommand{\microasmregister}[1]{\textcolor{registerpurple}{\texttt{#1}}}
+\newcommand{\microasmkeyword}[1]{\textcolor{keywordblue}{\texttt{#1}}}
+\newcommand{\microasmtype}[1]{\textcolor{typecyan}{\texttt{#1}}}
+\newcommand{\microasmdirective}[1]{\textcolor{directiveorange}{\texttt{#1}}}
+\newcommand{\microasmcomment}[1]{\textcolor{commentgreen}{\texttt{;#1}}}
+\newcommand{\microasmstring}[1]{\textcolor{stringred}{\texttt{"#1"}}}
+\newcommand{\microasmnumber}[1]{\textcolor{numberbrown}{\texttt{#1}}}
+\newcommand{\microasmlabel}[1]{\textcolor{labelteal}{\texttt{#1}}}
+
+
+\begin{document}
+
+\title{Micro-Assembly}
+\author{charlie-santana}
+\date{\today}
+
+\begin{titlepage}
+	\centering
+	\vspace*{3cm}
+	
+	% --- Stylized "logo" title ---
+	{\Huge\bfseries\textsf{\color{microblue} Micro}\color{black}-Assembly}\par
+	\vspace{0.6cm}
+	{\Large\itshape The Official Handbook for Everything MicroASM}\par
+	
+	\vspace{2.5cm}
+	
+	% --- Decorative separator ---
+	\rule{0.8\textwidth}{0.5pt}\par
+	\vspace{0.4cm}
+	{\large A \textbf{Finite Organization} Project}\par
+	\rule{0.8\textwidth}{0.5pt}\par
+	
+	\vspace{2cm}
+	
+	% --- Metadata ---
+	{\large Written by charlie-santana}\par
+	\vspace{0.2cm}
+	{\small Version 1.0 — Compiled on \today}\par
+	
+	\vfill
+	
+	% --- Footer ---
+	{\footnotesize Open-source Documentation \textbullet\ Licensed under CC BY-SA}\par
+\end{titlepage}
+
+
+\tableofcontents
+\chapter{Intro}
+Welcome to the official handbook for Everything Micro-Assembly related.
+
+This book contains information about Different contexts for Micro-Assembly
+some of these contexts are
+\begin{list}{*}{}
+	\item What is Micro-Assembly (masm)
+	\item Where it came from
+	\item What is Module Native Interface
+	\item MVC
+	\item and much more
+\end{list}
+
+for more information about how to use Micro-Assembly, check out the \hyperref[setup:masm]{Setting up Micro-Assembly} page on how to install and create masm programs.
+
+
+\text 
+
+
+\subsection{Intro}
+In the world of software, There's loads of programming languages to go around.
+Each language fit's into a certain category, C for building systems, Java for TV remotes and android apps / minecraft mods, lua for source engine games.
+
+it's not a surprise that everyone want's to build a programming language, weather it be interpreted or compiled, people want to build things like this either because it's fun or because they want to see how these things work.
+
+that's why i took on the challenge to make a programming language, not a big and daunting one. just one that fit the needs of what i wanted at the time.
+
+Since then, i've (charlie-san) been working on Micro-Assembly on and off to create something that works for everyone.
+
+\section{history}
+
+\subsection{what micro-assembly was}
+When i built the first version of Micro-Assembly, i didn't know what i was getting into.
+People told me that it would be hard to make a Assembly like programming language and not have the environment explode on me.
+
+and for a few day's, they were right.
+
+it felt like pain.
+day after day, working on what seemed to be empty promises.
+
+Components breaking, instances crashing.
+day after day, after day of consistent punishment.
+
+until it stopped.
+
+one day, things got better.
+
+the research i was doing was helping.
+
+features got implemented faster and faster over time.
+
+first it was the basic instructions, then it was jumps.
+labels, and then \hyperref[subpar:MNI]{MNI}.
+
+We got state for variables, Macros for reusable code and Syscalls for interacting with
+the VM.
+
+Micro-Assembly got these features in the most shortest time I've ever seen a language build.
+
+it's incredible to see a language that only existed a single year, get these feature updates
+at insane speeds.
+
+
+\subsection{How it came to be}
+Micro-Assembly was a joint project between me and some of my friends inside a game called
+\hyperref{https://resonite.com}{}{}{Resonite}, it's main goal was to be able to build games and interactive 
+worlds with a text based programming language.
+
+Developing items in resonite requires the use of their custom scripting language called ProtoFlux.
+
+Protoflux is a Visual scripting language following the typical left to right layout of most programming languages..
+It's main features do not include defining array's, Regex parsing or the likes.
+
+it's feature set does contain string manipulation and the very basics to get you started,
+though it's more in line with making game's with it instead of proper programming languages.
+it's more compared to C then it is an actual dot-net language.
+
+Though, with it's challenges and quirks, it is more than possible (if not just hard) to make a programming language with Protoflux.
+
+The original idea on how Micro-Assembly started was because i was talking to one of my friends who is really into old computers.
+
+at the time, they were trying to setup a model for one of those big room scale computer's.
+the old ones like ibm 350 and the likes.
+i saw the machines they were trying to setup and an idea came to me for wanting to make something that could
+work with these machines, like being able to program them with actual software and have them do something.
+
+though that idea took a bit to get started, the first prototype took a good few days to implement.
+we pretty much went through all of the different ways to do something like this. 
+
+once we found the working way to do a proper assembly like interpreter, it only really took like half an hour to implement the basic instructions like Add, Mul, Sub, Div, basic jump operators and things like that.
+
+labels of course came way into the future.
+
+\subsection{MASM's future}
+Micro-Assembly will forever be updated with features that make it more practical and special.
+
+For more information about what kind of features are going to be added, please check out
+\hyperref{https://discord.finite.ovh}{}{}{Finite's discord server}
+
+
+\subsection{General Consensus}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+
+\chapter{Getting started}
+This chapter Will help you get started on Setting up Micro-Assembly and teach you the basics for Micro-Assembly.
+\subsection{Setting up Micro-Assembly}\label{setup:masm}
+depending on the platform, Micro-Assembly can be easy or require some effort to setup.
+
+you can either:
+1. Run the binary from the same directory as the Micro-assembly code that your trying to run.
+2. Add the binary to the path and then call it from the command line like a normal application.
+
+Masm should be added to path by default if you have installed MASM from Purr.
+however on things i'm not going to cover in this book, lets get into the basic features.
+\subsection{basic features}
+Micro-Assembly comes with the basic features that a general purpose Programming language comes with.
+
+Math instructions, labels, Move operations, things like that.
+
+by default, there are 26 registers inside Micro-Assembly if you don't count the 16 Floating point registers
+that some Runtimes have.
+
+Micro-Assembly has a good chunk of extra features in the language that make it easier to work with.
+
+By default(,) Commas are not needed between arguments in the language.
+you can of course have commas seperating the arguments as they can just be filtered out.
+
+\subsection{Extended features}
+
+As stated above, Micro-Assembly comes with 16 Floating point registers Designed
+to help with math tasks.
+
+by prefixing the instructions with 'F', like 'fmov/fsub'. developers can write code that uses the floating point support that the runtime provides.
+
+Alongside the Floating point support inside the language, Micro-Assembly Comes with a Foreign function interface called MNI that allows developers to extend the language with more features.
+
+\subsection{MNI}\label{subpar:MNI}
+MNI or the Module native interface allows developers to design Foreign functions to interact with things like the kernel, GUI Tooling, Networking or whatever you may be interested in.
+
+Using the provided MNI instruction, you too can Work with External code in your codebase just as well as native code works with anything else.
+
+\chapter{Basics of Micro-Assembly}
+In this chapter, we will go over how to Write Micro-Assembly and run it.
+\subsection{1. Registers}
+\subsection{2. Memory}
+\subsection{3. How they play out}
+\subsection{4. Hello world}
+\subsection{5. Reading user input}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+
+\chapter{More Advanced Topics}
+
+\subsection{.}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+
+\chapter{MVC}
+
+\subsection{.}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+
+\chapter{it's Micro-High, not UHigh.net}
+
+Micro-High is a C like language designed to be a Easy to use programming language for the 
+Micro-Assembly Ecoystem
+
+\subsection{.}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+
+\chapter{Micro-High Notes}
+
+\subsection{.}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+\subsection{.}
+
+\end{document}

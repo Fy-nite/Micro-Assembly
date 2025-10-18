@@ -1,0 +1,185 @@
+\documentclass{article}
+\usepackage{xcolor}
+\usepackage{listings}
+
+% Define colors
+\definecolor{keywordblue}{RGB}{0,0,128}
+\definecolor{commentgreen}{RGB}{0,128,0}
+\definecolor{stringred}{RGB}{163,21,21}
+\definecolor{registerpurple}{RGB}{128,0,128}
+\definecolor{typecyan}{RGB}{0,128,128}
+\definecolor{directiveorange}{RGB}{180,100,0}
+\definecolor{numberbrown}{RGB}{128,64,0}
+\definecolor{labelteal}{RGB}{0,128,128}
+
+% MicroASM language definition
+\lstdefinelanguage{MicroASM}{
+	morekeywords=[1]{
+		% Basic Instructions
+		MOV, MOVZX, MOVSX, ADD, SUB, MUL, DIV, INC, DEC,
+		% Flow Control
+		JMP, CMP, CALL, RET, HLT, EXIT,
+		% Conditional Jumps
+		JZ, JNZ, JE, JNE, JS, JNS, JC, JNC, JB, JNAE, JAE, JNB, JO, JNO,
+		JG, JNLE, JL, JNGE, JGE, JNL, JLE, JNG,
+		% Stack Operations
+		PUSH, POP, ENTER, LEAVE,
+		% I/O Operations
+		IN, OUT, COUT,
+		% Command Line Arguments
+		ARGC, GETARG,
+		% Heap Operations
+		MALLOC, FREE,
+		% Bitwise Operations
+		AND, OR, XOR, NOT, SHL, SHR, SAR,
+		% Memory Operations
+		MOVADDR, MOVTO, COPY, FILL, CMP_MEM,
+		% System Call
+		SYSCALL,
+		% Floating Point
+		FMOV, FADD, FSUB, FMUL, FDIV, FCMP,
+		CVTSI2SD, CVTUI2SD, CVTSD2SI, CVTSD2UI, CVTSS2SD, CVTSD2SS,
+		FJE, FJNE, FJLT, FJLE, FJGT, FJGE, FJUO,
+		% MNI Calls
+		MNI,
+		% Program Control
+		LBL, STATE, MACRO, ENDMACRO, SCOPE, ENDSCOPE
+	},
+	morekeywords=[2]{
+		% Registers
+		RAX, RBX, RCX, RDX, RSI, RDI, RBP, RSP, RIP,
+		R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15,
+		FPR0, FPR1, FPR2, FPR3, FPR4, FPR5, FPR6, FPR7, FPR8, FPR9, FPR10, FPR11, FPR12, FPR13, FPR14, FPR15
+	},
+	morekeywords=[3]{
+		% Data Types
+		BYTE, WORD, DWORD, QWORD, FLOAT, DOUBLE, PTR
+	},
+	morekeywords=[4]{
+		% Directives
+		DB, DW, DD, DQ, DF, DDbl, RESB, RESW, RESD, RESQ, RESF, RESDbl,
+		\#include
+	},
+	morecomment=[l]{;},
+	morestring=[b]{"},
+	sensitive=true
+}
+
+% Style definition for MicroASM
+\lstdefinestyle{MicroASMstyle}{
+	language=MicroASM,
+	basicstyle=\ttfamily\small,
+	keywordstyle=[1]\color{keywordblue}\bfseries,
+	keywordstyle=[2]\color{registerpurple},
+	keywordstyle=[3]\color{typecyan},
+	keywordstyle=[4]\color{directiveorange},
+	commentstyle=\color{commentgreen}\itshape,
+	stringstyle=\color{stringred},
+	numbers=left,
+	numberstyle=\tiny\color{gray},
+	stepnumber=1,
+	numbersep=5pt,
+	backgroundcolor=\color{white},
+	showspaces=false,
+	showstringspaces=false,
+	showtabs=false,
+	tabsize=4,
+	captionpos=b,
+	breaklines=true,
+	breakatwhitespace=true,
+	frame=single,
+	rulecolor=\color{lightgray},
+	escapeinside={\%*}{*)}
+}
+
+% Custom colors for specific elements
+\newcommand{\microasmregister}[1]{\textcolor{registerpurple}{\texttt{#1}}}
+\newcommand{\microasmkeyword}[1]{\textcolor{keywordblue}{\texttt{#1}}}
+\newcommand{\microasmtype}[1]{\textcolor{typecyan}{\texttt{#1}}}
+\newcommand{\microasmdirective}[1]{\textcolor{directiveorange}{\texttt{#1}}}
+\newcommand{\microasmcomment}[1]{\textcolor{commentgreen}{\texttt{;#1}}}
+\newcommand{\microasmstring}[1]{\textcolor{stringred}{\texttt{"#1"}}}
+\newcommand{\microasmnumber}[1]{\textcolor{numberbrown}{\texttt{#1}}}
+\newcommand{\microasmlabel}[1]{\textcolor{labelteal}{\texttt{#1}}}
+
+\begin{document}
+	
+	% Example usage
+	\begin{lstlisting}[style=MicroASMstyle]
+		; Example MicroASM program with syntax highlighting
+		LBL main SCOPE
+		STATE counter <QWORD> 0
+		STATE message <PTR>
+		
+		; Initialize message
+		DB $1000 "Hello, MicroASM!"
+		MOV message 1000
+		
+		; Loop 5 times
+		MOV RCX 5
+		LBL loop
+		INC counter
+		OUT 1 message
+		DEC RCX
+		JNZ #loop
+		
+		; Allocate memory
+		MALLOC RAX 64
+		CMP RAX 0
+		JL #error
+		
+		; Free memory
+		FREE RAX RAX
+		
+		HLT
+		
+		LBL error
+		DB $2000 "Memory allocation failed!"
+		OUT 2 $2000
+		HLT
+		ENDSCOPE
+	\end{lstlisting}
+	
+	% Another example with floating point operations
+	\begin{lstlisting}[style=MicroASMstyle]
+		; Floating point example
+		LBL math_demo
+		STATE pi <DOUBLE> 3.14159
+		STATE radius <DOUBLE> 5.0
+		STATE area <DOUBLE>
+		
+		; Calculate area = pi * radius^2
+		FMOV FPR0 pi
+		FMOV FPR1 radius
+		FMUL FPR1 FPR1    ; radius^2
+		FMUL FPR0 FPR1    ; pi * radius^2
+		FMOV area FPR0
+		
+		; Convert to string and output
+		MNI Convert.doubleToString area R1
+		OUT 1 R1
+		
+		HLT
+	\end{lstlisting}
+	
+	% System call example
+	\begin{lstlisting}[style=MicroASMstyle]
+		; System call example
+		LBL syscall_demo
+		; Write to stdout
+		MOV RAX 1          ; write syscall
+		MOV RDI 1          ; stdout
+		MOV RSI message    ; message pointer
+		MOV RDX msg_len    ; message length
+		SYSCALL
+		
+		; Exit program
+		MOV RAX 60         ; exit syscall
+		MOV RDI 0          ; exit code
+		SYSCALL
+		
+		message: DB "Hello from SYSCALL!\n"
+		msg_len: EQU 19
+	\end{lstlisting}
+	
+\end{document}

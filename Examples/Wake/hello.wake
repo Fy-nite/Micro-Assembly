@@ -1,0 +1,15 @@
+
+void printf()
+{
+    out(RAX, $RBX)
+    ret()
+}
+
+void main()
+{
+    mov(RAX, 1)
+    mov(RBX, 100)
+    db($100, "Hello, World!")
+    call("printf")
+    hlt()
+}

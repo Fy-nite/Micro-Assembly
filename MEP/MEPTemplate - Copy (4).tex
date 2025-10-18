@@ -1,0 +1,296 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+
+% Page layout
+\geometry{a4paper, margin=1in}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+% Colors
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+% Listings style
+\lstset{
+	backgroundcolor=\color{backcolour},
+	commentstyle=\color{green},
+	keywordstyle=\color{blue},
+	numberstyle=\tiny\color{codegray},
+	stringstyle=\color{red},
+	basicstyle=\ttfamily\footnotesize,
+	breakatwhitespace=false,
+	breaklines=true,
+	captionpos=b,
+	keepspaces=true,
+	numbers=left,
+	numbersep=5pt,
+	showspaces=false,
+	showstringspaces=false,
+	showtabs=false,
+	tabsize=2
+}
+
+% Header and footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textit{\proposalTitle}}
+\fancyhead[R]{\proposalType\ \proposalNumber}
+\fancyfoot[C]{\thepage\ of \pageref{LastPage}}
+
+% Title formatting
+\titleformat{\section}
+{\Large\bfseries}
+{\thesection}{1em}{}
+\titleformat{\subsection}
+{\large\bfseries}
+{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+{\bfseries}
+{\thesubsubsection}{1em}{}
+
+% Custom commands
+\newcommand{\proposalType}{MEP}
+\newcommand{\proposalNumber}{XXXX}
+\newcommand{\proposalTitle}{Proposal Title}
+\newcommand{\proposalStatus}{Draft}
+\newcommand{\proposalVersion}{0.1}
+\newcommand{\proposalDate}{\today}
+\newcommand{\proposalAuthor}{Author Name}
+\newcommand{\proposalAuthorsEmail}{author@example.com}
+\newcommand{\proposalSponsor}{Sponsor Name (if any)}
+\newcommand{\proposalDiscussion}{Discussion URL}
+
+\begin{document}
+	
+	% Title page
+	\begin{titlepage}
+		\centering
+		
+		\vspace*{2cm}
+		
+		{\Huge\bfseries \proposalType-\proposalNumber\\}
+		\vspace{0.5cm}
+		{\LARGE \proposalTitle}
+		
+		\vspace{2cm}
+		
+		\begin{tabular}{ll}
+			\textbf{Title:} & \proposalTitle \\
+			\textbf{Status:} & \proposalStatus \\
+			\textbf{Type:} & Standards Track / Informational / Process \\
+			\textbf{Version:} & \proposalVersion \\
+			\textbf{Date:} & \proposalDate \\
+			\textbf{Author:} & \proposalAuthor \\
+			\textbf{Email:} & \proposalAuthorsEmail \\
+			\textbf{Sponsor:} & \proposalSponsor \\
+			\textbf{Discussion:} & \proposalDiscussion \\
+		\end{tabular}
+		
+		\vfill
+		
+		\begin{abstract}
+			This enhancement proposal describes [brief summary of what the proposal does and why it's important]. 
+			It addresses [key problem or opportunity] by [main approach]. 
+			The proposed changes will [expected benefits or outcomes]. 
+			This proposal is relevant for [target audience or components affected].
+		\end{abstract}
+		
+		\vspace{1cm}
+		
+		\rule{\textwidth}{0.4pt}
+		
+		\vspace{0.5cm}
+		
+		\small
+		Copyright \textcopyright{} \the\year{} \proposalAuthor
+		
+		This work is licensed under a Creative Commons Attribution 4.0 International License.
+		
+	\end{titlepage}
+	
+	% Table of contents
+	\tableofcontents
+	\newpage
+	
+	% Main content
+	\section{Introduction}
+	This section provides an overview of the enhancement proposal, including the context and background information necessary to understand the proposal. It should introduce the problem space and give a high-level description of the proposed solution.
+	
+	\subsection{Background}
+	Relevant background information that helps readers understand the context of this proposal.
+	
+	\subsection{Scope}
+	What is included in this proposal and, just as importantly, what is excluded.
+	
+	\section{Motivation}
+	Describe why this change is being proposed. What problem does it solve? What use cases does it address? Why is this change important now?
+	
+	Key motivations may include:
+	\begin{itemize}
+		\item Performance improvements
+		\item Usability enhancements
+		\item Security considerations
+		\item Maintenance and technical debt reduction
+		\item New feature requirements
+		\item Community or user requests
+	\end{itemize}
+	
+	\section{Rationale}
+	Explain the reasoning behind the design decisions. Why was this particular approach chosen over others? Discuss the trade-offs considered and the principles that guided the design.
+	
+	\subsection{Design Principles}
+	\begin{itemize}
+		\item Principle 1 and how it applies
+		\item Principle 2 and how it applies
+		\item Principle 3 and how it applies
+	\end{itemize}
+	
+	\subsection{Trade-offs}
+	Discussion of trade-offs considered during the design process.
+	
+	\section{Specification}
+	The technical specification of the proposal. This should be detailed enough to allow implementation.
+	
+	\subsection{Technical Details}
+	Describe the technical aspects here, including any algorithms, data structures, or architectural changes.
+	
+	\subsection{API Changes}
+	List any API changes if applicable. Use code examples where helpful:
+	
+	\begin{lstlisting}[language=Java,caption=Example API change]
+		// Old API
+		public void oldMethod(String param);
+		
+		// New API
+		public void newMethod(String param, Options options);
+	\end{lstlisting}
+	
+	\subsection{Syntax Changes}
+	Describe syntax changes if any. For language changes, provide before and after examples.
+	
+	\subsection{Behavioral Changes}
+	Describe how behavior changes with this proposal.
+	
+	\section{Backwards Compatibility}
+	Discuss backwards compatibility implications and migration strategies if applicable.
+	
+	\subsection{Breaking Changes}
+	List any breaking changes and their impact.
+	
+	\subsection{Migration Path}
+	Describe how existing code can be migrated to work with the new changes.
+	
+	\subsection{Deprecation Strategy}
+	If applicable, describe the deprecation timeline and process.
+	
+	\section{Security Implications}
+	Describe any security implications of this proposal. Consider:
+	
+	\begin{itemize}
+		\item New attack vectors introduced
+		\item Security improvements
+		\item Authentication/authorization changes
+		\item Data protection implications
+	\end{itemize}
+	
+	\section{Performance Implications}
+	Discuss performance implications and provide benchmarks if available.
+	
+	\subsection{Performance Improvements}
+	Describe expected performance improvements.
+	
+	\subsection{Performance Costs}
+	Describe any performance costs or trade-offs.
+	
+	\subsection{Benchmarks}
+	If available, include benchmark results comparing old and new approaches.
+	
+	\section{Alternatives}
+	Discuss alternative approaches that were considered and why they were rejected.
+	
+	\subsection{Alternative Approach 1}
+	Description of alternative and reasons for rejection.
+	
+	\subsection{Alternative Approach 2}
+	Description of alternative and reasons for rejection.
+	
+	\subsection{Alternative Approach 3}
+	Description of alternative and reasons for rejection.
+	
+	\section{Reference Implementation}
+	Describe or reference the implementation. This section is optional for some proposals but can be helpful for reviewers.
+	
+	\subsection{Implementation Details}
+	Key details about the implementation.
+	
+	\subsection{Testing Strategy}
+	How the implementation was tested.
+	
+	\section{Test Cases}
+	Provide test cases to verify the implementation.
+	
+	\subsection{Unit Tests}
+	Description of unit tests.
+	
+	\subsection{Integration Tests}
+	Description of integration tests.
+	
+	\subsection{Example Usage}
+	Practical examples of how to use the new feature:
+	
+	\begin{lstlisting}[language=Python,caption=Example usage]
+		def example_usage():
+		# Before the change
+		result = old_function(data)
+		
+		# After the change
+		result = new_function(data, improved=True)
+		return result
+	\end{lstlisting}
+	
+	\section{References}
+	\begin{enumerate}
+		\item Related PEP/JEP/RFC documents
+		\item Technical papers or articles
+		\item Source code references
+		\item Discussion threads
+	\end{enumerate}
+	
+	\section{Acknowledgments}
+	Acknowledge contributors, reviewers, and anyone who helped with the proposal. Be generous with credit where it's due.
+	
+	\appendix
+	\section{Appendix A: Additional Information}
+	Any additional material that supports the proposal but isn't essential to the main text.
+	
+	\subsection{Detailed Technical Analysis}
+	More in-depth technical analysis if needed.
+	
+	\subsection{Additional Examples}
+	More examples of usage patterns.
+	
+	\subsection{Implementation Timeline}
+	If applicable, provide a proposed implementation timeline.
+	
+	\section{Appendix B: Revision History}
+	\begin{itemize}
+		\item Version 0.1 (YYYY-MM-DD): Initial draft
+		\item Version 0.2 (YYYY-MM-DD): Incorporated feedback from discussion
+		\item Version 1.0 (YYYY-MM-DD): Final version accepted
+	\end{itemize}
+	
+\end{document}

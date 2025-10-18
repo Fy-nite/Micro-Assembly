@@ -3,11 +3,12 @@
 `Micro-Assembly is NOT Assembly`
 
 ## What is Micro-Assembly?
+Micro-Assembly (often abbreviated as **masm**) is a high-level interpreted programming language that draws inspiration from traditional assembly languages. It is designed to be easy to read and write, while still providing low-level control over system resources. Unlike assembly languages that are closely tied to specific hardware architectures, Micro-Assembly is intended to be portable and versatile, making it suitable for a wide range of applications.
 
-Micro-Assembly is an Assembly-like language designed as a complete, general-purpose programming language. Intended for general-purpose scripting, including tasks like math and console applications, Micro-Assembly is a versatile language choice.
+Micro-Assembly is not a direct replacement for assembly languages like x86 or ARM assembly, but rather a higher-level language that abstracts away many of the complexities associated with low-level programming. It is designed to be interpreted by a runtime environment, allowing developers to write code that can run on different platforms without modification.
 
 ## Core philosophy
-Micro-Assembly was created from the need for a text based programming language that gave users control oh what happend in their codebase without explicit "hidden features".
+Micro-Assembly was created from the need for a text based programming language that gave users control over what happend in their codebase without explicit "hidden features".
 
 *somewhat* powered by side-effects, Micro-Assembly is great for general tasks.
 
