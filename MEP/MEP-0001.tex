@@ -218,23 +218,22 @@
 	
 	% Main content
 	\section{Introduction}
-	MNI or Module-Native-Interface provides a set of External functions to allow developers
-	to write Foreign functions that provide Micro-Assembly 
-	
-	\subsection{Background}
-	Beyond built-in `SYSCALL` operations, MASM currently has no standard mechanism for interacting with host-system APIs.  
-	Implementing features like **concurrency**, **non-blocking I/O**, or **GUI** support would otherwise require patching the runtime or expanding the syscall table.
+	MNI or Module-Native-Interface allows a developer to create functions externally and run them inside Micro-Assembly programs.
 	
 	\subsection{Scope}
-	This MEP Defines the syntax and how MNI should be handled based on what given features the target language has.
+	This MEP defines how MNI should work and its syntax based on the abilities of the used language.
+	
+	\subsection{Background}
+	Beyond built-in {\tt SYSCALL} operations, MASM currently has no standard mechanism for interacting with host-system APIs.  
+	Implementing features like concurrency, non-blocking I/O, or GUI support would require patching the runtime or having runtime support more syscalls.
 	
 	\section{Motivation}
-	MNI solves this by defining a unified and extensible way to **expose host modules** to MASM programs.  
-	It allows developers to build libraries that “cover” host APIs and register them at runtime without altering the VM core.
+	MNI solves this by defining a standardised way to create functions in other coding languages and use them in Micro-Assembly
+	It allows developers to build functions that wrap host operating system APIs and register them at runtime without altering the MASM runtime.
 	
 	\section{Rationale}
-	While extending the syscall table could theoretically achieve similar results, that approach quickly becomes unmanageable.  
-	MNI provides a **modular**, **discoverable**, and **language-agnostic** mechanism for integrating host functionality without bloating or fragmenting the core runtime.
+	While extending the syscall table could theoretically solve this problem, there would still be issues. If we add more syscalls to the spec then every runtime, for every coding language, for every operating system, have to support them. If they are not in the spec then programs become very dependent on which runtime is used.
+	MNI fixes these issues because with MNI developers can create their own wrappers for os functions and use them in MASM programs.
 	
 	Future proposals may introduce typed arguments, metadata reflection, or introspection commands (`MNI list`, etc.) — all building upon this foundation.
 	\subsection{Trade-offs}
@@ -246,33 +245,33 @@
 	The MNI instruction is defined as:
 
 	\begin{lstlisting}[language=MicroASM]
-	MNI <namespace_path>.<function_name> <arguments>*
+	MNI <namespace_path>.<function_name> <arguments>
 	\end{lstlisting}
 
 	where:
 	\begin{itemize}
-		\item \textbf{namespace\_path} = identifier("." identifier)*
+		\item \textbf{namespace\_path} = identifier \{"." identifier\}
 		\item \textbf{function\_name} = identifier
 		\item \textbf{arguments} = zero or more literal or register arguments, separated by spaces
 	\end{itemize}
 
 	\subsection{Formal Grammar (EBNF)}
 	\begin{lstlisting}[language=MicroASM]
-	Instruction     ::= "MNI" QualifiedName Arguments?
-	QualifiedName   ::= Identifier ( "." Identifier )*
-	Arguments       ::= ( Value ( ","? Value )* )?
-	Identifier      ::= [A-Za-z_][A-Za-z0-9_]*
+	Instruction     ::= "MNI" QualifiedName [Arguments]
+	QualifiedName   ::= Identifier { "." Identifier }
+	Arguments       ::= Value { ","|" " Value }
+	Identifier      ::= [A-Za-z_] {[A-Za-z0-9_]}
 	Value           ::= Literal | Register | Identifier
 	\end{lstlisting}
 
 	\subsection{Semantics}
 	\begin{enumerate}
-		\item The \texttt{MNI} instruction resolves the specified \texttt{<namespace\_path>.<function\_name>} in the \textbf{Module Registry}.
-		\item If found, the runtime invokes the registered host function with the provided arguments.
-		\item The native function may return a result either:
+		\item The \texttt{MNI} instruction finds the specified function in the \textbf{Module Registry}.
+		\item If found, the runtime invokes the function with the provided arguments.
+		\item The native function then may return a result through:
 		\begin{itemize}
-			\item via a designated register (typically \texttt{RAX}), or
-			\item via a pointer argument passed by the caller.
+			\item a designated register (typically \texttt{RAX}), or
+			\item a pointer argument passed by the caller.
 		\end{itemize}
 		\item If the module or function is not found, the runtime raises a runtime error or trap.
 	\end{enumerate}
@@ -287,7 +286,7 @@
 	; Open a file for reading
 	MNI File.Open "data.txt" 0
 
-	; Read 64 bytes into a buffer
+	; Read 64 bytes into the buffer
 	MNI File.Read RAX 64
 	\end{lstlisting}
 
@@ -300,12 +299,12 @@
 	\end{itemize}
 
 	\subsection{Safety Considerations}
-	MNI functions execute native host code, which may perform unrestricted operations.\\
-	Implementations \textbf{should}:
+	MNI functions may execute native host code, which may perform unrestricted operations.\\
+	Implementations and modules \textbf{should}:
 	\begin{itemize}
 		\item Validate memory and register access.
-		\item Enforce sandboxing or permission checks for untrusted modules.
-		\item Prevent host-level crashes from propagating to the MASM VM when possible.
+		\item Enforce sandboxing and/or permission checks.
+		\item Prevent host-level crashes from propagating to the MASM runtime when possible.
 	\end{itemize}
 	
 	\section{Backwards Compatibility}
@@ -317,11 +316,9 @@
  	Any code written without MNI works still without it, this implementation gives a new instruction for developers to use inside their code.
 	
 	\subsection{Performance Costs}
-	Based on the language chosen to be the MNI host, like lua or JavaScript.
-	Performance can and will vary.
+	Performance can and will vary based on the MNI host language.
 	
-	Example: if the interpreter is built in C and it uses Lua for the MNI scripting.
-	jumping in and out of the interpreter to call the MNI features does include performance cost.
+	Example: if the interpreter is built in C and it uses Lua for the MNI scripting, calling MNI functions does include performance costs.
 	
 	\section{Reference Implementation}
 	The **JMASM** runtime implements the first complete MNI system.  
@@ -329,8 +326,7 @@
 	
 	\subsection{Implementation Details}
 	MNI uses a registry system to allow for modular attachments of code at runtime.
-	It scans either a provided file or Directory at runtime for Modules and dynamicly loads the contents for
-	the MNI instruction to use.
+	It scans either a provided file or directory at runtime for Modules and dynamicly loads the modules.
 	
 
 	
